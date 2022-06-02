@@ -6,8 +6,7 @@
  *
  */
 
-import type {Comment, Comments, Thread} from '../commenting';
-import type {
+ import type {
   EditorState,
   LexicalCommand,
   LexicalEditor,
@@ -49,7 +48,16 @@ import * as React from 'react';
 import {createPortal} from 'react-dom';
 import useLayoutEffect from 'shared/useLayoutEffect';
 
-import {cloneThread, createComment, createThread} from '../commenting';
+import {
+  cloneThread,
+  Comment,
+  Comments,
+  CommentStore,
+  createComment,
+  createThread,
+  Thread,
+  useCommentStore,
+} from '../commenting';
 import useModal from '../hooks/useModal';
 import CommentEditorTheme from '../themes/CommentEditorTheme';
 import Button from '../ui/Button';
@@ -677,12 +685,12 @@ function CommentsPanel({
 }
 
 export default function CommentPlugin({
-  initialComments,
+  commentStore,
 }: {
-  initialComments?: Comments;
+  commentStore: CommentStore;
 }): JSX.Element {
   const [editor] = useLexicalComposerContext();
-  const [comments, setComments] = useState<Comments>(initialComments || []);
+  const comments = useCommentStore(commentStore);
   const markNodeMap = useMemo<Map<string, Set<NodeKey>>>(() => {
     return new Map();
   }, []);
@@ -704,52 +712,55 @@ export default function CommentPlugin({
 
   const deleteComment = useCallback(
     (comment: Comment, thread?: Thread) => {
-      setComments((_comments) => {
-        const nextComments = Array.from(_comments);
-
-        if (thread !== undefined) {
-          for (let i = 0; i < nextComments.length; i++) {
-            const nextComment = nextComments[i];
-            if (nextComment.type === 'thread' && nextComment.id === thread.id) {
-              const newThread = cloneThread(nextComment);
-              nextComments.splice(i, 1, newThread);
-              const threadComments = newThread.comments;
-              const index = threadComments.indexOf(comment);
-              threadComments.splice(index, 1);
-              if (threadComments.length === 0) {
-                const threadIndex = nextComments.indexOf(newThread);
-                nextComments.splice(threadIndex, 1);
-                // Remove ids from associated marks
-                const id = thread !== undefined ? thread.id : comment.id;
-                const markNodeKeys = markNodeMap.get(id);
-                if (markNodeKeys !== undefined) {
-                  // Do async to avoid causing a React infinite loop
-                  setTimeout(() => {
-                    editor.update(() => {
-                      for (const key of markNodeKeys) {
-                        const node: null | MarkNode = $getNodeByKey(key);
-                        if ($isMarkNode(node)) {
-                          node.deleteID(id);
-                          if (node.getIDs().length === 0) {
-                            $unwrapMarkNode(node);
-                          }
-                        }
-                      }
-                    });
-                  });
+      commentStore.deleteComment(comment, thread);
+      // Remove ids from associated marks
+      const id = thread !== undefined ? thread.id : comment.id;
+      const markNodeKeys = markNodeMap.get(id);
+      if (markNodeKeys !== undefined) {
+        // Do async to avoid causing a React infinite loop
+        setTimeout(() => {
+          editor.update(() => {
+            for (const key of markNodeKeys) {
+              const node: null | MarkNode = $getNodeByKey(key);
+              if ($isMarkNode(node)) {
+                node.deleteID(id);
+                if (node.getIDs().length === 0) {
+                  $unwrapMarkNode(node);
                 }
               }
-              break;
             }
-          }
-        } else {
-          const index = nextComments.indexOf(comment);
-          nextComments.splice(index, 1);
-        }
-        return nextComments;
-      });
+          });
+        });
+      }
+
+      // setComments((_comments) => {
+      //   const nextComments = Array.from(_comments);
+
+      //   if (thread !== undefined) {
+      //     for (let i = 0; i < nextComments.length; i++) {
+      //       const nextComment = nextComments[i];
+      //       if (nextComment.type === 'thread' && nextComment.id === thread.id) {
+      //         const newThread = cloneThread(nextComment);
+      //         nextComments.splice(i, 1, newThread);
+      //         const threadComments = newThread.comments;
+      //         const index = threadComments.indexOf(comment);
+      //         threadComments.splice(index, 1);
+      //         if (threadComments.length === 0) {
+      //           const threadIndex = nextComments.indexOf(newThread);
+      //           nextComments.splice(threadIndex, 1);
+                
+      //         }
+      //         break;
+      //       }
+      //     }
+      //   } else {
+      //     const index = nextComments.indexOf(comment);
+      //     nextComments.splice(index, 1);
+      //   }
+      //   return nextComments;
+      // });
     },
-    [editor, markNodeMap],
+    [commentStore, editor, markNodeMap],
   );
 
   const submitAddComment = useCallback(
@@ -758,23 +769,24 @@ export default function CommentPlugin({
       isInlineComment: boolean,
       thread?: Thread,
     ) => {
-      setComments((_comments) => {
-        const nextComments = Array.from(_comments);
-        if (thread !== undefined && commentOrThread.type === 'comment') {
-          for (let i = 0; i < nextComments.length; i++) {
-            const comment = nextComments[i];
-            if (comment.type === 'thread' && comment.id === thread.id) {
-              const newThread = cloneThread(comment);
-              nextComments.splice(i, 1, newThread);
-              newThread.comments.push(commentOrThread);
-              break;
-            }
-          }
-        } else {
-          nextComments.push(commentOrThread);
-        }
-        return nextComments;
-      });
+      commentStore.addComment(commentOrThread, thread);
+      // setComments((_comments) => {
+      //   const nextComments = Array.from(_comments);
+      //   if (thread !== undefined && commentOrThread.type === 'comment') {
+      //     for (let i = 0; i < nextComments.length; i++) {
+      //       const comment = nextComments[i];
+      //       if (comment.type === 'thread' && comment.id === thread.id) {
+      //         const newThread = cloneThread(comment);
+      //         nextComments.splice(i, 1, newThread);
+      //         newThread.comments.push(commentOrThread);
+      //         break;
+      //       }
+      //     }
+      //   } else {
+      //     nextComments.push(commentOrThread);
+      //   }
+      //   return nextComments;
+      // });
       if (isInlineComment) {
         editor.update(() => {
           const selection = $getSelection();
@@ -798,7 +810,7 @@ export default function CommentPlugin({
         setShowCommentInput(false);
       }
     },
-    [editor],
+    [commentStore, editor],
   );
 
   useEffect(() => {

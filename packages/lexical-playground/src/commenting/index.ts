@@ -6,10 +6,7 @@
  *
  */
 
-export type CommentContextType = {
-  isActive: boolean;
-  setActive: (val: boolean) => void;
-};
+import {useState} from 'react';
 
 export type Comment = {
   author: string;
@@ -61,4 +58,30 @@ export function cloneThread(thread: Thread): Thread {
     quote: thread.quote,
     type: 'thread',
   };
+}
+
+export class CommentStore {
+  _comments: Comments;
+  _isCollab: boolean;
+
+  constructor(isCollab: boolean) {
+    this._comments = [];
+    this._isCollab = isCollab;
+  }
+
+  getComments(): Comments {
+    return this._comments;
+  }
+
+  addComment(commentOrThread: Comment | Thread, thread?: Thread): void {}
+
+  deleteComment(comment: Comment, thread?: Thread): void {}
+}
+
+export function useCommentStore(commentStore: CommentStore): Comments {
+  const [comments, setComments] = useState<Comments>(
+    commentStore.getComments(),
+  );
+
+  return comments;
 }
