@@ -15,6 +15,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=development concurrently \"npm:collab\" \"npm run dev --prefix packages/lexical-playground\"",
     "start:website": "npm run start --prefix packages/lexical-website-new -- --port 3001",
+    "start:vanilla": "npm run start --prefix packages/lexical-vanilla-js -- --port 3002",
     "dev": "npm run dev --prefix packages/lexical-playground",
     "build": "node scripts/build.js",
     "build-prod": "npm run clean && npm run build -- --prod",
@@ -133,6 +134,7 @@
     "lint-staged": "^11.1.0",
     "minimist": "^1.2.5",
     "npm-run-all": "^4.1.5",
+    "parcel": "^2.6.0",
     "playwright": "1.23.0-next-alpha-trueadm-fork",
     "prettier": "^2.3.2",
     "prettier-plugin-organize-attributes": "^0.0.5",
