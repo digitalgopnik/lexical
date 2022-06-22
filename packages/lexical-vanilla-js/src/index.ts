@@ -1,31 +1,24 @@
+import {CodeHighlightNode, CodeNode} from '@lexical/code';
+import {HashtagNode} from '@lexical/hashtag';
+import {AutoLinkNode, LinkNode} from '@lexical/link';
+import {ListItemNode, ListNode} from '@lexical/list';
+import {MarkNode} from '@lexical/mark';
+import {
+  $convertToMarkdownString,
+  registerMarkdownShortcuts,
+  TRANSFORMERS,
+} from '@lexical/markdown';
+import {OverflowNode} from '@lexical/overflow';
+import {registerPlainText} from '@lexical/plain-text';
+import {HeadingNode, QuoteNode} from '@lexical/rich-text';
+import {TableCellNode, TableNode, TableRowNode} from '@lexical/table';
 import {
   $getRoot,
   createEditor,
   LineBreakNode,
   ParagraphNode,
   TextNode,
-} from '../../lexical/dist/Lexical';
-import {CodeHighlightNode, CodeNode} from '../../lexical-code/dist/LexicalCode';
-import {HashtagNode} from '../../lexical-hashtag/dist/LexicalHashtag';
-import {AutoLinkNode, LinkNode} from '../../lexical-link/dist/LexicalLink';
-import {ListItemNode, ListNode} from '../../lexical-list/dist/LexicalList';
-import {MarkNode} from '../../lexical-mark/dist/LexicalMark';
-import {
-  $convertToMarkdownString,
-  registerMarkdownShortcuts,
-  TRANSFORMERS,
-} from '../../lexical-markdown/dist/LexicalMarkdown';
-import {OverflowNode} from '../../lexical-overflow/dist/LexicalOverflow';
-import {registerPlainText} from '../../lexical-plain-text/dist/LexicalPlainText';
-import {
-  HeadingNode,
-  QuoteNode,
-} from '../../lexical-rich-text/dist/LexicalRichText';
-import {
-  TableCellNode,
-  TableNode,
-  TableRowNode,
-} from '../../lexical-table/dist/LexicalTable';
+} from 'lexical';
 
 function initPlainText(editor, initialEditorState?) {
   return registerPlainText(editor);

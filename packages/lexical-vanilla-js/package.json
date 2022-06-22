@@ -5,6 +5,18 @@
     "scripts": {
       "start": "concurrently \"parcel index.html --open\" \"tsc-watch --onsuccess src/index.ts --target esnext\""
     },
+    "dependencies": {
+      "@lexical/code": "^0.3.1",
+      "@lexical/hashtag": "^0.3.1",
+      "@lexical/link": "^0.3.1",
+      "@lexical/list": "^0.3.1",
+      "@lexical/mark": "^0.3.1",
+      "@lexical/markdown": "^0.3.1",
+      "@lexical/overflow": "^0.3.1",
+      "@lexical/plain-text": "^0.3.1",
+      "@lexical/rich-text": "^0.3.1",
+      "@lexical/table": "^0.3.1"
+    },
     "browserslist": {
       "production": [
         ">0.5%",
